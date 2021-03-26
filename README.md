@@ -10,7 +10,7 @@ prospective customers
 
 ### Assumptions
 * Neither constraints nor service prices are known.
-* We are interested in short term tendencies, therefore data is filtered (>= 2018) or open complaints.
+* We are interested in short term tendencies, therefore data was filtered (>= 2018) or open complaints.
 
 ## Goal
 Offers insights where the company can shortlist their 

@@ -5,14 +5,82 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+df = pd.read_csv('../raw_data/shortlist.zip', index_col='date_received', parse_dates=True)
 
 '''
-# Financial Complaint Winners
+# Insight on Financial Complaints
 The Consumer Financial Protection Bureau maintain a public dataset with complaints ("complaint_database").
 Below we presented a short report that intended raise some insights for an imaginary company that deals with customer 
-complaints and offers its services to companies in the financial sector.
+complaints and offers its service to companies in the financial sector and is looking for new customers.
+'''
 
-## Potential customers
+df_plot1 = df[['complaint_id']].resample('M').count()
+
+# Plot: Complaints per month
+fig = px.line(df_plot1.reset_index(), x='date_received', y='complaint_id',
+              title='Monthly Complaints', labels={
+                                                  'date_received': 'Date',
+                                                  'complaint_id': 'Complaints'
+                                                  }, height=500, template='simple_white')
+
+st.plotly_chart(fig, use_container_width=True)
+
+'''
+As complaints skyrocketed after the coronavirus outbreak, this trend is analyzed per company previously selected. 
+'''
+
+# Looking that trend by companies
+compl_p_month = df[['complaint_id', 'company_name']].groupby(['company_name']) \
+.resample('M').count()['complaint_id'].reset_index()
+
+# Plot: Complaints per month
+fig = px.line(compl_p_month, x='date_received', y='complaint_id', color='company_name',
+              labels={'company_name': 'Companies',
+                      'date_received': 'Date',
+                      'complaint_id': 'Complaints'
+                      }, height=700, template='simple_white')
+
+fig.update_layout(legend=dict(title=None, orientation="h", y=1, yanchor="bottom", x=0.5, xanchor="center"))
+
+st.plotly_chart(fig, use_container_width=True)
+
+
+'''
+Considering the amount of monthly complaints per company we applied a non-parametric test to slit the companies into 
+groups that are statistically similar. Below are presented a boxplot with the first six groups. 
+'''
+
+df_bplot = pd.read_json('../tidy_data/df_bpolt.json')
+
+fig = px.box(df_bplot, x='company_name', y='complaint_id', color='group',
+             title='Boxplot - Monthly Complaints per Companies', labels={'company_name': 'Companies',
+                                                                         'complaint_id': 'Monthly complaints',
+                                                                         'group': 'Groups'},
+             category_orders={'group': [1, 2, 3, 4, 5, 6]},
+             height=700, template='simple_white')
+
+fig.update_layout(legend=dict(title=None, orientation="h", y=1, yanchor="bottom", x=0.5, xanchor="center"))
+
+st.plotly_chart(fig, use_container_width=True)
+
+'''
+Now it is clear which companies have the most monthly complaints. But how do these companies deal with due dates?
+'''
+
+df_sub7_bplot = pd.read_json('../tidy_data/df_sub7_bplot.json')
+
+df_sub7_bplot['group'] = df_sub7_bplot['group'].astype(str)
+
+fig = px.bar(df_sub7_bplot, x='company_name', y='complaint_id', color='group',
+             category_orders={'company_name': df_sub7_bplot.company_name},
+             title='Complaints with untimely response per month', labels={'company_name': 'Companies',
+                                                                          'complaint_id': 'Monthly complaints',
+                                                                          'group': 'Groups'},
+             width=800, height=600, template='simple_white')
+
+st.plotly_chart(fig, use_container_width=True)
+
+'''
 The list below combines companies that received the most complaints, the most complaints this year, the most complaints 
 in which the status is "In progress" or "Untimely response" and finally the companies with the most recurring issues by 
 type. 

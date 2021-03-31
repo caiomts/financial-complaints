@@ -10,7 +10,6 @@ its service to companies in the financial sector and is looking for new customer
 * Prospect big customers is time-consuming strategy, thus the plans can not change in a
   small period. The analysis is one time shot and realtime data is not a necessity.
 * We are interested in short term tendencies, therefore data was filtered (>= 2018) or open complaints.
-* 
 
 ## Goal
 Shortlist potential customers considering different criteria.

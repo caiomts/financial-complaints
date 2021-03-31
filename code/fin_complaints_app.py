@@ -8,9 +8,9 @@ from plotly.subplots import make_subplots
 df = pd.read_csv('../raw_data/shortlist.zip', index_col='date_received', parse_dates=True)
 
 '''
-# Insight on Financial Complaints
+# Insights on Financial Complaints
 The Consumer Financial Protection Bureau maintain a public dataset with complaints ("complaint_database").
-Below we presented a short report that intended raise some insights for an imaginary company that deals with customer 
+Below we presented a short report that intended to raise some insights for an imaginary company that deals with customer 
 complaints and offers its service to companies in the financial sector and is looking for new customers.
 '''
 
@@ -26,7 +26,10 @@ fig = px.line(df_plot1.reset_index(), x='date_received', y='complaint_id',
 st.plotly_chart(fig, use_container_width=True)
 
 '''
-As complaints skyrocketed after the coronavirus outbreak, this trend is analyzed per company previously selected. 
+As complaints skyrocketed after the coronavirus outbreak, this trend is analyzed per company (Those companies were first
+shortlisted as the union of the following subsets: 
+20 companies with most complaints, 20 companies with most complaints this year, 20 companies with most complaints 
+"In progress" or "Untimely response"). 
 '''
 
 # Looking that trend by companies
@@ -76,75 +79,82 @@ fig = px.bar(df_sub7_bplot, x='company_name', y='complaint_id', color='group',
              title='Complaints with untimely response per month', labels={'company_name': 'Companies',
                                                                           'complaint_id': 'Monthly complaints',
                                                                           'group': 'Groups'},
-             width=800, height=600, template='simple_white')
+             height=600, template='simple_white')
 
 st.plotly_chart(fig, use_container_width=True)
 
 '''
-The list below combines companies that received the most complaints, the most complaints this year, the most complaints 
-in which the status is "In progress" or "Untimely response" and finally the companies with the most recurring issues by 
-type. 
+There is no link between monthly complaints and timely response. In addition, only five companies postpone two or more 
+responses per month. 
+'''
+
+df_in_prog = pd.read_json('../tidy_data/df_in_prog.json')
+
+df_in_prog['group'] = df_in_prog['group'].astype(str)
+
+fig = px.bar(df_in_prog, x='company_name', y='complaint_id', color='group',
+             category_orders={'company_name': df_in_prog.company_name},
+             title='Complaints whose status is "In progress"', labels={'company_name': 'Companies',
+                                                                       'complaint_id': 'Monthly complaints',
+                                                                       'group': 'Groups'},
+             height=600, template='simple_white')
+
+st.plotly_chart(fig, use_container_width=True)
+
+'''
+However, when we look to complaints with "In progress" status one company with few monthly complaints presents almost 
+the same amount in progress - Alliance Data Card Services. Backlog is an interest feature to observe because companies 
+that don't present a high monthly complaints might not have capacity to deal with the backlog. Therefore, we present
+below the ratio between complaints 'In progress' and monthly median complaints per company.
+
+'''
+
+df_median_prog = df_in_prog.merge(df_bplot.groupby(['group',
+                                                    'company_name']).median(),
+                                  how='left', on=['company_name'])
+
+df_median_prog.rename(columns={'complaint_id_x': 'In progress', 'complaint_id_y': 'Median',
+                      'company_name': 'Company Name', 'group': 'Group'}, inplace=True)
+df_median_prog['Complaint ratio'] = df_median_prog['In progress'] / df_median_prog['Median']
+df_median_prog.sort_values(by=['Complaint ratio'], ascending=False, inplace=True)
+
+st.dataframe(df_median_prog[['Group', 'Company Name', 'In progress', 'Median', 'Complaint ratio']])
+
+'''
+Finally we took a brief look at complaints per product type and companies. "Credit reporting..." is by far the main 
+cause of complaints and it is also responsible for the majority of the complaints in Group 1. Among other companies, 
+apart the first product, that is also a leader, the companies themselves are less "specialized".
+'''
+
+df_prods = pd.read_json('../tidy_data/df_prods.json')
+
+fig = px.bar(df_prods, x='product', y='complaint_id', color='company_name', height=1000, template='simple_white',
+             labels={'company_name': 'Companies',
+                     'complaint_id': 'Complaints',
+                     'product': 'Products'})
+
+fig.update_layout(legend=dict(title=None, orientation="h", y=1, yanchor="bottom", x=0.5, xanchor="center"))
+
+st.plotly_chart(fig, use_container_width=True)
+
+'''
+# A possible Shortlist
+
+The group 1 should be in the list because the numbers of monthly complaints are very high and, even if those companies
+might have a good customer service, a good price can be a good incentive to outsourcing it. Next, we proposed
+include into the list all companies that present a ratio between monthly complaints and complaints in progress bigger 
+than 30% because is possible that this companies do not have capacity to reduce this backlog by themselves. Finally,
+companies that has more two complaints in average that are solved after the due date. The list is presented below with
+the total complaints per year since 2018.
 '''
 
 complaints_per_year = pd.read_csv('../tidy_data/fc_per_y.zip', index_col='company_name')
 
-st.dataframe(complaints_per_year, height=300)
+shortlist = list(['EQUIFAX, INC.', 'Experian Information Solutions Inc.', 'Alliance Data Card Services',
+                  'WELLS FARGO & COMPANY', 'TRANSUNION INTERMEDIATE HOLDINGS, INC.',
+                  'BANK OF AMERICA, NATIONAL ASSOCIATION', 'SYNCHRONY FINANCIAL', 'PNC Bank N.A.'])
 
-'''
-The following is the number of complaints per month of the pre-selected companies.
-'''
+df_sl = complaints_per_year[complaints_per_year.index.isin(shortlist)]
 
-shortlist_1 = pd.read_csv('../raw_data/shortlist.zip', index_col='date_received', parse_dates=True)
+st.dataframe(df_sl, height=300)
 
-df = shortlist_1.loc[shortlist_1.company_name.isin(complaints_per_year.index.to_list())] \
-    .groupby(['company_name']).resample('M').count()['complaint_id'].reset_index()
-
-fig = px.line(df, x='date_received', y='complaint_id', color='company_name',
-              labels={'company_name': 'Companies',
-                      'date_received': 'Date',
-                      'complaint_id': 'Complaints'
-                      }, height=700, template='simple_white')
-
-fig.update_layout(legend=dict(title=None, orientation="h", y=1, yanchor="bottom", x=0.5, xanchor="center"))
-
-st.plotly_chart(fig, use_container_width=True)
-
-'''
-Three companies are by fair the winners of complaints received and it is clear that, after the coronavirus upheaval, 
-their number of complaints skyrocketed.
-
-### What is the average monthly complaints per company? Are these numbers statistically different between companies?
-There isn't interest in compare all 31 companies presented so far, due to this we first extracted a subset of companies 
-for which the monthly median is bigger than 200 complaints. After that, we pair compared the companies sorted 
-by the median and grouped it always when the null hypothesis that two related paired samples come from 
-the same distribution was rejected.
-'''
-
-df_avg_id = df.groupby(['company_name']).describe().sort_values(by=[('complaint_id',  'mean')], ascending=False)
-
-# subset: only if median > 200 complaints per month
-ls = df_avg_id.loc[df_avg_id[('complaint_id',  '50%')] > 200].index.to_list()
-
-conditions = [
-    (df['company_name'].isin(ls[0:3])),
-    (df['company_name'].isin(ls[3:6])),
-    (df['company_name'].isin(ls[6:8])),
-    (df['company_name'].isin([ls[8]])),
-    (df['company_name'].isin(ls[9:]))
-]
-
-groups = list(range(1, 6, 1))
-
-df['group'] = np.select(conditions, groups)
-
-fig = make_subplots(rows=1, cols=2)
-fig = px.box(df[df['company_name'].isin(ls[0:8])], x='company_name', y='complaint_id', color='group',
-             title='Boxplot - Monthly Complaints per Companies', labels={'company_name': 'Companies',
-                                                                         'complaint_id': 'Monthly complaints',
-                                                                         'group': 'Groups'},
-             category_orders={'company_name': ls[0:8], 'group': [1, 2, 3]},
-             width=800, height=600, template='simple_white')
-
-fig.update_layout(legend=dict(title=None, orientation="h", y=1, yanchor="bottom", x=0.5, xanchor="center"))
-
-st.plotly_chart(fig, use_container_width=True)

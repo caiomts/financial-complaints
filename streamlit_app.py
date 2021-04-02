@@ -71,7 +71,7 @@ fig = px.box(df_bplot, x='company_name', y='complaint_id', color='group',
              title='Boxplot - Monthly Complaints per Companies', labels={'company_name': 'Companies',
                                                                          'complaint_id': 'Monthly complaints',
                                                                          'group': 'Groups'},
-             color_discrete_map=colors,
+             color_discrete_map={1:'blue', 2: 'red', 3: 'green', 4: 'yellow', 5: 'purple', 6: 'pink'},
              category_orders={'group': [1, 2, 3, 4, 5, 6]},
              height=700, template='simple_white')
 

@@ -13,10 +13,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+colors = {'1':'blue', '2': 'red', '3': 'green', '4': 'yellow', '5': 'purple', '6': 'pink'}
+
 '''
 # Insights on Financial Complaints
 
-The **Consumer Financial Protection Bureau** maintain a public dataset with microdata of complaints against financial 
+The **Consumer Financial Protection Bureau** maintains a public dataset with microdata of complaints against financial 
 institutions. The following is a brief interactive report to raise some insights for an imaginary company that deals 
 with customer complaints and offers its service to companies in the financial sector and is looking for new customers.
 '''
@@ -35,7 +37,7 @@ st.plotly_chart(fig, use_container_width=True)
 '''
 As complaints skyrocketed after the coronavirus outbreak, this trend is analyzed per companies.  
   
-*Those companies were first shortlisted as the union of the following subsets: 
+*These companies were first shortlisted as the union of the following subsets: 
 20 companies with most complaints, 20 companies with most complaints this year (2021), 20 companies with most complaints 
 "In progress" or "Untimely response"*. 
 '''
@@ -59,7 +61,7 @@ st.plotly_chart(fig, use_container_width=True)
 '''
 It is clear that three companies pushed the trend.  
    
-In the sequence a non-parametric test was applied to slit the companies into groups that are statistically similar, 
+In the sequence a non-parametric test was applied to slip the companies into groups that the distribution are statistically different (p<0.05), 
 as presented in the chart below for the first six groups. 
 '''
 
@@ -69,6 +71,7 @@ fig = px.box(df_bplot, x='company_name', y='complaint_id', color='group',
              title='Boxplot - Monthly Complaints per Companies', labels={'company_name': 'Companies',
                                                                          'complaint_id': 'Monthly complaints',
                                                                          'group': 'Groups'},
+             color_discrete_map=colors,
              category_orders={'group': [1, 2, 3, 4, 5, 6]},
              height=700, template='simple_white')
 
@@ -77,7 +80,7 @@ fig.update_layout(legend=dict(title=None, orientation="h", y=1, yanchor="bottom"
 st.plotly_chart(fig, use_container_width=True)
 
 '''
-Now it is clear which companies have the most monthly complaints. But how do these companies deal with due dates?
+Now it is clear which companies have the most monthly complaints. But how do these companies deal with deadlines?
 '''
 
 df_sub7_bplot = pd.read_json('./tidy_data/df_sub7_bplot.json')
@@ -89,6 +92,7 @@ fig = px.bar(df_sub7_bplot, x='company_name', y='complaint_id', color='group',
              title='Average delayed responses per month', labels={'company_name': 'Companies',
                                                                           'complaint_id': 'Monthly complaints',
                                                                           'group': 'Groups'},
+             color_discrete_map=colors,
              height=600, template='simple_white')
 
 st.plotly_chart(fig, use_container_width=True)
@@ -109,13 +113,14 @@ fig = px.bar(df_in_prog, x='company_name', y='complaint_id', color='group',
              title='Complaints whose status is "In progress"', labels={'company_name': 'Companies',
                                                                        'complaint_id': 'Monthly complaints',
                                                                        'group': 'Groups'},
+             color_discrete_map=colors,
              height=600, template='simple_white')
 
 st.plotly_chart(fig, use_container_width=True)
 
 '''
-Looking at complaints with "In progress" status companies with few monthly complaints presents almost 
-the same amount in progress. Backlog is an interest feature to observe because companies 
+Looking at complaints with "In progress" status companies with few monthly complaints present almost 
+the same amount in progress. Backlog is an interesting feature to observe because companies 
 that don't present a high monthly complaints might not have capacity to deal with the backlog. Therefore, we present
 below the ratio between complaints 'In progress' and monthly median complaints per company.
 
@@ -160,7 +165,7 @@ data, would you suggest another one?
 ### My suggestion
 (1) The group 1 should be on the list because the numbers of monthly complaints are very high and, even though 
 those companies may have a good customer service, a good price can be an incentive to outsource it. (2) Next, I proposed
-include in the list all companies that have a ratio between monthly complaints and complaints in progress bigger 
+to include in the list all companies that have a ratio between monthly complaints and complaints in progress bigger 
 than 30% because it is possible that these companies are not able to reduce this backlog on their own. (3) Finally,
 companies that have more than two complaints, on average, that are solved after the deadline.  
 *My shortlist is presented below with the total complaints per year since 2018.*

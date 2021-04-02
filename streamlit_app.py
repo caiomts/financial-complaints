@@ -13,7 +13,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-colors = {'1':'blue', '2': 'red', '3': 'green', '4': 'yellow', '5': 'purple', '6': 'pink'}
+colors = {'1':'#b2182b', '2': '#ef8a62', '3': '#fddbc7', '4': '#d1e5f0', '5': '#67a9cf', '6': '#2166ac'}
 
 '''
 # Insights on Financial Complaints
